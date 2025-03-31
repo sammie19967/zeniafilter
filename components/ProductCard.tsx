@@ -1,8 +1,25 @@
-// components/ProductCard.jsx
+// components/ProductCard.tsx
 import Image from 'next/image';
 import Link from 'next/link';
 
-const ProductCard = ({ product }) => {
+interface Product {
+  _id: string;
+  name: string;
+  price: number;
+  images?: string[];
+  location?: {
+    county: string;
+  };
+  listingType?: 'sale' | 'hire';
+  description: string;
+  createdAt: string;
+}
+
+interface ProductCardProps {
+  product: Product;
+}
+
+const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
   return (
     <div className="bg-white rounded-lg shadow-md overflow-hidden">
       <Link href={`/products/${product._id}`}>
