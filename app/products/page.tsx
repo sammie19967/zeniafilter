@@ -7,36 +7,56 @@ import ProductFilters from '@/components/ProductFilters';
 import ProductCard from '@/components/ProductCard';
 import { useRouter } from 'next/navigation';
 
+interface Product {
+  _id: string;
+  name: string;
+  price: number;
+  images?: string[];
+  location?: {
+    county: string;
+  };
+  listingType?: 'sale' | 'hire';
+  description: string;
+  createdAt: string;
+}
+
+interface Pagination {
+  total: number;
+  page: number;
+  limit: number;
+  pages: number;
+}
+
 export default function ProductsPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  
-  const [products, setProducts] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [pagination, setPagination] = useState({
+
+  const [products, setProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [pagination, setPagination] = useState<Pagination>({
     total: 0,
     page: 1,
     limit: 10,
-    pages: 0
+    pages: 0,
   });
-  
+
   // Fetch products when searchParams change
   useEffect(() => {
     const fetchProducts = async () => {
       try {
         setLoading(true);
-        
+
         // Get current page from URL or default to 1
-        const page = searchParams.get('page') || 1;
-        
+        const page = searchParams.get('page') || '1';
+
         // Create request URL with all search params
         const apiUrl = `/api/products/filter?${searchParams.toString()}`;
         const response = await fetch(apiUrl);
-        
+
         if (!response.ok) {
           throw new Error('Failed to fetch products');
         }
-        
+
         const data = await response.json();
         setProducts(data.products);
         setPagination(data.pagination);
@@ -46,32 +66,32 @@ export default function ProductsPage() {
         setLoading(false);
       }
     };
-    
+
     fetchProducts();
   }, [searchParams]);
-  
+
   // Handle pagination
-  const handlePageChange = (newPage) => {
+  const handlePageChange = (newPage: number) => {
     // Create new URLSearchParams from current
     const params = new URLSearchParams(searchParams.toString());
-    
+
     // Update page parameter
-    params.set('page', newPage);
-    
+    params.set('page', newPage.toString());
+
     // Navigate with updated params
     router.push(`/products?${params.toString()}`);
   };
-  
+
   return (
     <div className="container mx-auto px-4 py-8">
       <h1 className="text-3xl font-bold mb-6">Products</h1>
-      
+
       <div className="flex flex-col md:flex-row gap-6">
         {/* Filters Sidebar */}
         <div className="md:w-1/4">
           <ProductFilters />
         </div>
-        
+
         {/* Products Grid */}
         <div className="md:w-3/4">
           {loading ? (
@@ -87,11 +107,11 @@ export default function ProductsPage() {
           ) : (
             <>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                {products.map(product => (
+                {products.map((product) => (
                   <ProductCard key={product._id} product={product} />
                 ))}
               </div>
-              
+
               {/* Simple Pagination */}
               {pagination.pages > 1 && (
                 <div className="mt-8 flex justify-center gap-2">
@@ -102,11 +122,11 @@ export default function ProductsPage() {
                   >
                     Previous
                   </button>
-                  
+
                   <span className="px-4 py-2">
                     Page {pagination.page} of {pagination.pages}
                   </span>
-                  
+
                   <button
                     onClick={() => handlePageChange(pagination.page + 1)}
                     disabled={pagination.page === pagination.pages}
